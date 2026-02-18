@@ -1,3 +1,7 @@
+// =========================
+// Navegação e UI Geral
+// =========================
+
 // Menu Sticky
 const navbar = document.getElementById('navbar');
 const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -6,13 +10,13 @@ let lastScroll = 0;
 
 window.addEventListener('scroll', () => {
     const currentScroll = window.pageYOffset;
-    
+
     if (currentScroll > 100) {
-        navbar.classList.add('scrolled');
+        navbar?.classList.add('scrolled');
     } else {
-        navbar.classList.remove('scrolled');
+        navbar?.classList.remove('scrolled');
     }
-    
+
     lastScroll = currentScroll;
 });
 
@@ -51,10 +55,10 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         if (this.closest('.premio-card')) {
             return; // Deixa o link funcionar normalmente
         }
-        
+
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
-        
+
         if (target) {
             const offsetTop = target.offsetTop - 80;
             window.scrollTo({
@@ -72,7 +76,7 @@ const revealOnScroll = () => {
     revealElements.forEach(element => {
         const elementTop = element.getBoundingClientRect().top;
         const elementVisible = 150;
-        
+
         if (elementTop < window.innerHeight - elementVisible) {
             element.classList.add('active');
         }
@@ -108,7 +112,7 @@ revealElements.forEach(element => {
 window.addEventListener('scroll', () => {
     const scrolled = window.pageYOffset;
     const hero = document.querySelector('.hero');
-    
+
     // Desabilitar parallax em dispositivos móveis para melhor performance
     if (hero && scrolled < window.innerHeight && window.innerWidth > 768) {
         hero.style.transform = `translateY(${scrolled * 0.5}px)`;
@@ -117,20 +121,10 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Adicionar efeito de hover nas imagens da galeria
-const galleryItems = document.querySelectorAll('.masonry-item');
+// =========================
+// Lightbox da Galeria
+// =========================
 
-galleryItems.forEach(item => {
-    item.addEventListener('mouseenter', function() {
-        this.style.transform = 'scale(1.02)';
-    });
-    
-    item.addEventListener('mouseleave', function() {
-        this.style.transform = 'scale(1)';
-    });
-});
-
-// Lightbox Modal
 const lightbox = document.getElementById('lightbox');
 const lightboxImage = document.getElementById('lightboxImage');
 const lightboxClose = document.getElementById('lightboxClose');
@@ -142,108 +136,119 @@ const lightboxTotal = document.getElementById('lightboxTotal');
 let currentImageIndex = 0;
 let galleryImages = [];
 
-// Coletar todas as imagens da galeria
 function initGalleryImages() {
-    galleryImages = Array.from(document.querySelectorAll('.masonry-item img')).map(img => ({
-        src: img.src.replace('?w=800&q=80', '?w=1920&q=90'), // Usar versão maior da imagem
+    const images = document.querySelectorAll('.masonry-item img');
+    galleryImages = Array.from(images).map(img => ({
+        src: img.src,
         alt: img.alt
     }));
-    lightboxTotal.textContent = galleryImages.length;
+    if (lightboxTotal) {
+        lightboxTotal.textContent = galleryImages.length;
+    }
 }
 
-// Abrir lightbox
 function openLightbox(index) {
     currentImageIndex = index;
     updateLightboxImage();
-    lightbox.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevenir scroll do body
+    if (lightbox) {
+        lightbox.classList.add('active');
+    }
+    document.body.style.overflow = 'hidden';
 }
 
-// Fechar lightbox
 function closeLightbox() {
-    lightbox.classList.remove('active');
-    document.body.style.overflow = ''; // Restaurar scroll
+    if (lightbox) {
+        lightbox.classList.remove('active');
+    }
+    document.body.style.overflow = '';
 }
 
-// Atualizar imagem no lightbox
 function updateLightboxImage() {
-    if (galleryImages.length > 0) {
-        lightboxImage.src = galleryImages[currentImageIndex].src;
-        lightboxImage.alt = galleryImages[currentImageIndex].alt;
+    if (!lightboxImage || galleryImages.length === 0) return;
+    const item = galleryImages[currentImageIndex];
+    lightboxImage.src = item.src;
+    lightboxImage.alt = item.alt;
+    if (lightboxCurrent) {
         lightboxCurrent.textContent = currentImageIndex + 1;
     }
 }
 
-// Navegar para imagem anterior
 function showPrevImage() {
-    if (galleryImages.length > 0) {
-        currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
-        updateLightboxImage();
-    }
+    if (galleryImages.length === 0) return;
+    currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+    updateLightboxImage();
 }
 
-// Navegar para próxima imagem
 function showNextImage() {
-    if (galleryImages.length > 0) {
-        currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
-        updateLightboxImage();
-    }
+    if (galleryImages.length === 0) return;
+    currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
+    updateLightboxImage();
 }
 
-// Event listeners para abrir lightbox ao clicar nas imagens
-galleryItems.forEach((item, index) => {
-    item.addEventListener('click', () => {
-        openLightbox(index);
+function setupGalleryInteractions() {
+    const galleryItems = document.querySelectorAll('.masonry-item');
+
+    galleryItems.forEach((item, index) => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.02)';
+        });
+
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+
+        item.addEventListener('click', () => {
+            openLightbox(index);
+        });
     });
-});
 
-// Event listeners para controles do lightbox
-lightboxClose.addEventListener('click', closeLightbox);
-lightboxPrev.addEventListener('click', showPrevImage);
-lightboxNext.addEventListener('click', showNextImage);
+    initGalleryImages();
+}
 
-// Fechar ao clicar no fundo (mas não na imagem)
-lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) {
-        closeLightbox();
-    }
-});
+if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+if (lightboxPrev) lightboxPrev.addEventListener('click', showPrevImage);
+if (lightboxNext) lightboxNext.addEventListener('click', showNextImage);
 
-// Navegação por teclado
-document.addEventListener('keydown', (e) => {
-    if (lightbox.classList.contains('active')) {
-        if (e.key === 'Escape') {
+if (lightbox) {
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) {
             closeLightbox();
-        } else if (e.key === 'ArrowLeft') {
-            showPrevImage();
-        } else if (e.key === 'ArrowRight') {
-            showNextImage();
         }
+    });
+}
+
+document.addEventListener('keydown', (e) => {
+    if (!lightbox || !lightbox.classList.contains('active')) return;
+
+    if (e.key === 'Escape') {
+        closeLightbox();
+    } else if (e.key === 'ArrowLeft') {
+        showPrevImage();
+    } else if (e.key === 'ArrowRight') {
+        showNextImage();
     }
 });
 
-// Inicializar imagens da galeria
-initGalleryImages();
+// =========================
+// Navegação ativa no menu
+// =========================
 
-// Atualizar link ativo no menu ao rolar
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav-link');
 
 const updateActiveNav = () => {
     let current = '';
-    
+
     sections.forEach(section => {
         const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
-        
         if (window.pageYOffset >= sectionTop - 200) {
             current = section.getAttribute('id');
         }
     });
-    
+
     navLinks.forEach(link => {
         link.classList.remove('active');
-        if (link.getAttribute('href') === `#${current}`) {
+        if (current && link.getAttribute('href') === `#${current}`) {
             link.classList.add('active');
         }
     });
@@ -251,25 +256,30 @@ const updateActiveNav = () => {
 
 window.addEventListener('scroll', updateActiveNav);
 
-// Adicionar classe active ao primeiro link por padrão
 if (window.pageYOffset < 100) {
     document.querySelector('a[href="#hero"]')?.classList.add('active');
 }
 
-// Lazy loading para imagens (fallback para navegadores antigos)
+// =========================
+// Lazy loading fallback
+// =========================
+
 if ('loading' in HTMLImageElement.prototype) {
     const images = document.querySelectorAll('img[loading="lazy"]');
     images.forEach(img => {
         img.src = img.src;
     });
 } else {
-    // Fallback para navegadores que não suportam lazy loading
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js';
     document.body.appendChild(script);
 }
 
-// Adicionar animação suave ao carregar a página
+// =========================
+// Efeitos adicionais
+// =========================
+
+// Animação suave ao carregar a página
 window.addEventListener('load', () => {
     document.body.style.opacity = '0';
     setTimeout(() => {
@@ -281,7 +291,7 @@ window.addEventListener('load', () => {
 // Prevenir scroll horizontal
 document.body.style.overflowX = 'hidden';
 
-// Adicionar efeito de brilho nos cards de prêmios
+// Efeito de brilho nos cards de prêmios
 const premioCards = document.querySelectorAll('.premio-card');
 
 premioCards.forEach(card => {
@@ -291,10 +301,10 @@ premioCards.forEach(card => {
             const rect = this.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
-            
+
             this.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05))`;
         });
-        
+
         card.addEventListener('mouseleave', function() {
             this.style.background = 'linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.05))';
         });
@@ -312,6 +322,97 @@ if (premiosSlides.length > 0) {
         premiosSlides[currentPremioSlide].classList.add('active');
     };
 
-    // Rotacionar a cada 5 segundos
     setInterval(rotatePremiosBackground, 5000);
 }
+
+// =========================
+// Supabase - Galeria Dinâmica
+// =========================
+
+// Configuração do Supabase (substitua pelos dados reais do projeto)
+const SUPABASE_URL = 'https://qzklsvecqavpymtccawn.supabase.co'; // TODO: alterar
+const SUPABASE_ANON_KEY = 'sb_publishable_7sH23dn4JVNi0MKK6USLEQ_yQPYVeD3'; // TODO: alterar
+
+let supabaseClient = null;
+
+if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY) {
+    try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (error) {
+        console.error('Erro ao inicializar Supabase:', error);
+    }
+} else {
+    console.warn('Supabase não configurado. Defina SUPABASE_URL e SUPABASE_ANON_KEY.');
+}
+
+const galleryGrid = document.getElementById('galleryGrid');
+const galleryLoader = document.getElementById('galleryLoader');
+const galleryError = document.getElementById('galleryError');
+const galleryEmpty = document.getElementById('galleryEmpty');
+
+async function loadGalleryFromSupabase() {
+    if (!supabaseClient || !galleryGrid) return;
+
+    try {
+        if (galleryLoader) galleryLoader.style.display = 'flex';
+        if (galleryError) galleryError.textContent = '';
+        if (galleryEmpty) galleryEmpty.hidden = true;
+        galleryGrid.innerHTML = '';
+
+        // Carrega álbuns
+        const { data: albums, error: albumsError } = await supabaseClient
+            .from('albums')
+            .select('*')
+            .order('date', { ascending: false });
+
+        if (albumsError) throw albumsError;
+
+        // Carrega fotos
+        const { data: photos, error: photosError } = await supabaseClient
+            .from('photos')
+            .select('*');
+
+        if (photosError) throw photosError;
+
+        if (!photos || photos.length === 0) {
+            if (galleryEmpty) galleryEmpty.hidden = false;
+            return;
+        }
+
+        const albumsById = new Map();
+        (albums || []).forEach(album => {
+            albumsById.set(album.id, album);
+        });
+
+        photos.forEach(photo => {
+            const album = albumsById.get(photo.album_id);
+
+            const item = document.createElement('div');
+            item.className = 'masonry-item';
+
+            if (album?.title) {
+                item.dataset.albumTitle = album.title;
+            }
+
+            const img = document.createElement('img');
+            img.src = photo.photo_url;
+            img.alt = album?.title ? `Álbum ${album.title}` : 'Foto de casamento';
+            img.loading = 'lazy';
+
+            item.appendChild(img);
+            galleryGrid.appendChild(item);
+        });
+
+        setupGalleryInteractions();
+    } catch (error) {
+        console.error('Erro ao carregar galeria do Supabase:', error);
+        if (galleryError) {
+            galleryError.textContent = 'Não foi possível carregar a galeria. Verifique a configuração do Supabase.';
+        }
+    } finally {
+        if (galleryLoader) galleryLoader.style.display = 'none';
+    }
+}
+
+// Carregar galeria dinâmica ao iniciar
+loadGalleryFromSupabase().catch(console.error);

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Área administrativa - Jefferson Tadei Fotografia de Casamento">
+    <title>Admin - Jefferson Tadei</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <header class="admin-header">
+            <div class="admin-logo">Tadei Fotografia e Filmes</div>
+            <button id="adminLogout" class="admin-logout-button" hidden>Sair</button>
+        </header>
+
+        <main class="admin-main">
+            <!-- Login -->
+            <section id="adminAuthSection" class="admin-section admin-auth-section">
+                <div class="admin-card">
+                    <h1 class="admin-title">Acesso Restrito</h1>
+                    <p class="admin-subtitle">Faça login para gerenciar álbuns e fotos.</p>
+                    <form id="adminLoginForm" class="admin-form">
+                        <div class="admin-field">
+                            <label for="adminEmail">E-mail</label>
+                            <input type="email" id="adminEmail" class="admin-input" placeholder="jefferson@tadeifotografia.com" required>
+                        </div>
+                        <div class="admin-field">
+                            <label for="adminPassword">Senha</label>
+                            <input type="password" id="adminPassword" class="admin-input" placeholder="Sua senha" required>
+                        </div>
+                        <button type="submit" class="admin-button">Entrar</button>
+                        <p id="adminAuthError" class="admin-error-message"></p>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Painel -->
+            <section id="adminPanelSection" class="admin-section admin-panel-section" hidden>
+                <div class="admin-card">
+                    <h1 class="admin-title">Gerenciar Álbuns</h1>
+                    <p class="admin-subtitle">Crie novos álbuns e envie fotos premiadas.</p>
+
+                    <!-- Criar Álbum -->
+                    <div class="admin-block">
+                        <h2 class="admin-block-title">Novo Álbum</h2>
+                        <form id="createAlbumForm" class="admin-form">
+                            <div class="admin-field">
+                                <label for="albumTitle">Título do álbum</label>
+                                <input type="text" id="albumTitle" class="admin-input" placeholder="Ex: Casamento Ana & João" required>
+                            </div>
+                            <div class="admin-field">
+                                <label for="albumDate">Data do casamento</label>
+                                <input type="date" id="albumDate" class="admin-input" required>
+                            </div>
+                            <button type="submit" class="admin-button">Criar álbum</button>
+                            <p id="createAlbumMessage" class="admin-success-message"></p>
+                            <p id="createAlbumError" class="admin-error-message"></p>
+                        </form>
+                    </div>
+
+                    <!-- Upload Fotos -->
+                    <div class="admin-block">
+                        <h2 class="admin-block-title">Upload de Fotos</h2>
+                        <p class="admin-helper-text">Selecione o álbum e envie múltiplas fotos para o Storage.</p>
+
+                        <form id="uploadPhotosForm" class="admin-form">
+                            <div class="admin-field">
+                                <label for="albumSelect">Selecionar álbum</label>
+                                <select id="albumSelect" class="admin-input" required>
+                                    <option value="">Carregando álbuns...</option>
+                                </select>
+                            </div>
+                            <div class="admin-field">
+                                <label for="photoFiles">Fotos (múltiplas)</label>
+                                <input type="file" id="photoFiles" class="admin-input" accept="image/*" multiple required>
+                            </div>
+                            <button type="submit" class="admin-button">Enviar fotos</button>
+                            <div id="uploadProgress" class="admin-progress" hidden>
+                                <div class="admin-loader-spinner"></div>
+                                <p id="uploadStatus" class="admin-helper-text">Enviando fotos...</p>
+                            </div>
+                            <p id="uploadPhotosMessage" class="admin-success-message"></p>
+                            <p id="uploadPhotosError" class="admin-error-message"></p>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="admin-footer">
+            <p>© 2022 Jefferson Tadei. Área Administrativa.</p>
+        </footer>
+    </div>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
+

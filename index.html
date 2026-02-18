@@ -98,34 +98,17 @@
     <section id="galeria" class="galeria">
         <div class="container">
             <h2 class="section-title reveal">Galeria</h2>
-            <div class="masonry-grid reveal">
-                <div class="masonry-item">
-                    <img src="https://prowedaward.com/static/albumy/2025/original/8f84f70f46db_prowedaward-jefferson-cristiano-guimaraes-tadei.jpeg" alt="Casamento elegante" loading="lazy">
-                </div>
-                <div class="masonry-item">
-                    <img src="https://prowedaward.com/static/albumy/2025/original/1529d82d70fc_prowedaward-jefferson-cristiano-guimaraes-tadei.jpeg" alt="Noivos no altar" loading="lazy">
-                </div>
-                <div class="masonry-item">
-                    <img src="https://prowedaward.com/static/albumy/2025/original/29e2681c3eb7_prowedaward-jefferson-cristiano-guimaraes-tadei.jpeg" alt="Momentos especiais" loading="lazy">
-                </div>
-                <div class="masonry-item">
-                    <img src="https://prowedaward.com/static/albumy/2025/original/b72b8a32551a_prowedaward-jefferson-cristiano-guimaraes-tadei.jpeg" alt="Cerimônia de casamento(drone)" loading="lazy">
-                </div>
-                <div class="masonry-item">
-                    <img src="https://prowedaward.com/static/albumy/2025/original/a425bf5a9c3d_prowedaward-jefferson-cristiano-guimaraes-tadei.jpeg" alt="Beijo" loading="lazy">
-                </div>
-                <div class="masonry-item">
-                    <img src="https://prowedaward.com/static/albumy/2025/original/122140016067e69a7bdb8e48.90542325_prowedaward-jefferson-cristiano-guimaraes-tadei.jpeg" alt="Comemoração" loading="lazy">
-                </div>
-                <div class="masonry-item">
-                    <img src="https://prowedaward.com/static/albumy/2025/original/a31385666487_prowedaward-jefferson-cristiano-guimaraes-tadei.jpeg" alt="Noivo na escada" loading="lazy">
-                </div>
-                <div class="masonry-item">
-                    <img src="https://prowedaward.com/static/albumy/2021/original/1080873663611acf77011e74.95223677_prowedaward-jefferson-cristiano-guimaraes-tadei.jpeg" alt="Espiando" loading="lazy">
-                </div>
-                <div class="masonry-item">
-                    <img src="https://prowedaward.com/static/albumy/2021/original/23646296560992bdec48ee0.70833561_prowedaward-jefferson-cristiano-guimaraes-tadei.jpeg" alt="Aliança" loading="lazy">
-                </div>
+
+            <div class="gallery-loader" id="galleryLoader">
+                <div class="loader-spinner"></div>
+                <p class="loader-text">Carregando álbuns e fotos...</p>
+            </div>
+
+            <div class="gallery-error" id="galleryError"></div>
+            <div class="gallery-empty" id="galleryEmpty" hidden>Nenhuma foto cadastrada ainda.</div>
+
+            <div class="masonry-grid reveal" id="galleryGrid">
+                <!-- Fotos carregadas dinamicamente via Supabase -->
             </div>
         </div>
     </section>
@@ -198,6 +181,8 @@
         </div>
     </div>
 
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
