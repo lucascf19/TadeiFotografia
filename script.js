@@ -28,7 +28,6 @@ if (mobileMenuToggle && navMenu) {
         document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
     });
 
-    // Fechar menu ao clicar em um link
     const navLinks = navMenu.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
@@ -38,7 +37,6 @@ if (mobileMenuToggle && navMenu) {
         });
     });
 
-    // Fechar menu ao clicar fora
     document.addEventListener('click', (e) => {
         if (!navMenu.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
             mobileMenuToggle.classList.remove('active');
@@ -48,12 +46,11 @@ if (mobileMenuToggle && navMenu) {
     });
 }
 
-// Smooth Scroll para links de navegação (apenas links internos)
+// Smooth Scroll para links internos
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
-        // Não aplicar se for um link de navegação dentro de um card de prêmio
         if (this.closest('.premio-card')) {
-            return; // Deixa o link funcionar normalmente
+            return;
         }
 
         e.preventDefault();
@@ -83,13 +80,10 @@ const revealOnScroll = () => {
     });
 };
 
-// Verificar elementos na carga inicial
 window.addEventListener('load', revealOnScroll);
-
-// Verificar elementos ao rolar
 window.addEventListener('scroll', revealOnScroll);
 
-// Intersection Observer para melhor performance
+// Intersection Observer
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -100px 0px'
@@ -103,17 +97,15 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Aplicar observer aos elementos reveal
 revealElements.forEach(element => {
     observer.observe(element);
 });
 
-// Efeito parallax suave no hero (apenas em desktop)
+// Efeito parallax suave no hero (desktop)
 window.addEventListener('scroll', () => {
     const scrolled = window.pageYOffset;
     const hero = document.querySelector('.hero');
 
-    // Desabilitar parallax em dispositivos móveis para melhor performance
     if (hero && scrolled < window.innerHeight && window.innerWidth > 768) {
         hero.style.transform = `translateY(${scrolled * 0.5}px)`;
     } else if (hero) {
@@ -122,7 +114,7 @@ window.addEventListener('scroll', () => {
 });
 
 // =========================
-// Lightbox da Galeria
+// Lightbox da Galeria (por Álbum)
 // =========================
 
 const lightbox = document.getElementById('lightbox');
@@ -133,22 +125,14 @@ const lightboxNext = document.getElementById('lightboxNext');
 const lightboxCurrent = document.getElementById('lightboxCurrent');
 const lightboxTotal = document.getElementById('lightboxTotal');
 
-let currentImageIndex = 0;
-let galleryImages = [];
+let albumsData = [];        // [{ id, title, date, photos: [{ id, photo_url }] }]
+let currentAlbumIndex = 0;
+let currentPhotoIndex = 0;
 
-function initGalleryImages() {
-    const images = document.querySelectorAll('.masonry-item img');
-    galleryImages = Array.from(images).map(img => ({
-        src: img.src,
-        alt: img.alt
-    }));
-    if (lightboxTotal) {
-        lightboxTotal.textContent = galleryImages.length;
-    }
-}
-
-function openLightbox(index) {
-    currentImageIndex = index;
+function openAlbumLightbox(albumIndex, photoIndex = 0) {
+    if (!albumsData[albumIndex]) return;
+    currentAlbumIndex = albumIndex;
+    currentPhotoIndex = photoIndex;
     updateLightboxImage();
     if (lightbox) {
         lightbox.classList.add('active');
@@ -164,45 +148,37 @@ function closeLightbox() {
 }
 
 function updateLightboxImage() {
-    if (!lightboxImage || galleryImages.length === 0) return;
-    const item = galleryImages[currentImageIndex];
-    lightboxImage.src = item.src;
-    lightboxImage.alt = item.alt;
-    if (lightboxCurrent) {
-        lightboxCurrent.textContent = currentImageIndex + 1;
-    }
+    if (!lightboxImage || !albumsData.length) return;
+
+    const album = albumsData[currentAlbumIndex];
+    if (!album || !album.photos || album.photos.length === 0) return;
+
+    const photos = album.photos;
+    const photo = photos[currentPhotoIndex];
+
+    lightboxImage.src = photo.photo_url;
+    lightboxImage.alt = album.title ? `Álbum ${album.title}` : 'Foto de casamento';
+
+    if (lightboxCurrent) lightboxCurrent.textContent = String(currentPhotoIndex + 1);
+    if (lightboxTotal) lightboxTotal.textContent = String(photos.length);
 }
 
 function showPrevImage() {
-    if (galleryImages.length === 0) return;
-    currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
+    const album = albumsData[currentAlbumIndex];
+    if (!album || !album.photos || album.photos.length === 0) return;
+
+    const total = album.photos.length;
+    currentPhotoIndex = (currentPhotoIndex - 1 + total) % total;
     updateLightboxImage();
 }
 
 function showNextImage() {
-    if (galleryImages.length === 0) return;
-    currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
+    const album = albumsData[currentAlbumIndex];
+    if (!album || !album.photos || album.photos.length === 0) return;
+
+    const total = album.photos.length;
+    currentPhotoIndex = (currentPhotoIndex + 1) % total;
     updateLightboxImage();
-}
-
-function setupGalleryInteractions() {
-    const galleryItems = document.querySelectorAll('.masonry-item');
-
-    galleryItems.forEach((item, index) => {
-        item.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.02)';
-        });
-
-        item.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
-        });
-
-        item.addEventListener('click', () => {
-            openLightbox(index);
-        });
-    });
-
-    initGalleryImages();
 }
 
 if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
@@ -265,8 +241,8 @@ if (window.pageYOffset < 100) {
 // =========================
 
 if ('loading' in HTMLImageElement.prototype) {
-    const images = document.querySelectorAll('img[loading="lazy"]');
-    images.forEach(img => {
+    const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+    lazyImages.forEach(img => {
         img.src = img.src;
     });
 } else {
@@ -295,9 +271,8 @@ document.body.style.overflowX = 'hidden';
 const premioCards = document.querySelectorAll('.premio-card');
 
 premioCards.forEach(card => {
-    // Só aplicar efeito se não for um link
     if (!card.href) {
-        card.addEventListener('mousemove', function(e) {
+        card.addEventListener('mousemove', function (e) {
             const rect = this.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -305,7 +280,7 @@ premioCards.forEach(card => {
             this.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05))`;
         });
 
-        card.addEventListener('mouseleave', function() {
+        card.addEventListener('mouseleave', function () {
             this.style.background = 'linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.05))';
         });
     }
@@ -326,12 +301,12 @@ if (premiosSlides.length > 0) {
 }
 
 // =========================
-// Supabase - Galeria Dinâmica
+// Supabase - Galeria Dinâmica por Álbum
 // =========================
 
-// Configuração do Supabase (substitua pelos dados reais do projeto)
-const SUPABASE_URL = 'https://qzklsvecqavpymtccawn.supabase.co'; // TODO: alterar
-const SUPABASE_ANON_KEY = 'sb_publishable_7sH23dn4JVNi0MKK6USLEQ_yQPYVeD3'; // TODO: alterar
+// Configuração do Supabase (dados reais do projeto)
+const SUPABASE_URL = 'https://qzklsvecqavpymtccawn.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_7sH23dn4JVNi0MKK6USLEQ_yQPYVeD3';
 
 let supabaseClient = null;
 
@@ -349,6 +324,23 @@ const galleryGrid = document.getElementById('galleryGrid');
 const galleryLoader = document.getElementById('galleryLoader');
 const galleryError = document.getElementById('galleryError');
 const galleryEmpty = document.getElementById('galleryEmpty');
+
+// Depoimentos (home)
+const testimonialsGrid = document.getElementById('testimonialsGrid');
+const testimonialsLoader = document.getElementById('testimonialsLoader');
+const testimonialsError = document.getElementById('testimonialsError');
+const testimonialsEmpty = document.getElementById('testimonialsEmpty');
+
+function formatAlbumDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
 
 async function loadGalleryFromSupabase() {
     if (!supabaseClient || !galleryGrid) return;
@@ -384,26 +376,87 @@ async function loadGalleryFromSupabase() {
             albumsById.set(album.id, album);
         });
 
-        photos.forEach(photo => {
-            const album = albumsById.get(photo.album_id);
+        // Monta estrutura por álbum
+        albumsData = (albums || []).map(album => {
+            const albumPhotos = photos.filter(p => p.album_id === album.id);
+            return {
+                id: album.id,
+                title: album.title,
+                date: album.date,
+                photos: albumPhotos
+            };
+        }).filter(album => album.photos && album.photos.length > 0);
 
-            const item = document.createElement('div');
-            item.className = 'masonry-item';
+        if (!albumsData.length) {
+            if (galleryEmpty) galleryEmpty.hidden = false;
+            return;
+        }
 
-            if (album?.title) {
-                item.dataset.albumTitle = album.title;
-            }
+        // Criar cards por álbum
+        albumsData.forEach((album, albumIndex) => {
+            const card = document.createElement('div');
+            card.className = 'album-card';
+            card.dataset.albumIndex = String(albumIndex);
+
+            const carousel = document.createElement('div');
+            carousel.className = 'album-carousel';
 
             const img = document.createElement('img');
-            img.src = photo.photo_url;
-            img.alt = album?.title ? `Álbum ${album.title}` : 'Foto de casamento';
+            const firstPhoto = album.photos[0];
+            img.src = firstPhoto.photo_url;
+            img.alt = album.title ? `Álbum ${album.title}` : 'Foto de casamento';
             img.loading = 'lazy';
 
-            item.appendChild(img);
-            galleryGrid.appendChild(item);
-        });
+            carousel.appendChild(img);
 
-        setupGalleryInteractions();
+            const info = document.createElement('div');
+            info.className = 'album-info';
+
+            const titleEl = document.createElement('h3');
+            titleEl.className = 'album-title';
+            titleEl.textContent = album.title || 'Álbum sem título';
+
+            const dateEl = document.createElement('p');
+            dateEl.className = 'album-date';
+            const formattedDate = formatAlbumDate(album.date);
+            dateEl.textContent = formattedDate ? formattedDate : '';
+
+            info.appendChild(titleEl);
+            if (formattedDate) info.appendChild(dateEl);
+
+            card.appendChild(carousel);
+            card.appendChild(info);
+
+            // Clique abre lightbox para o álbum
+            card.addEventListener('click', () => {
+                openAlbumLightbox(albumIndex, 0);
+            });
+
+            // Pequeno hover via JS opcional (CSS já cobre boa parte)
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-6px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = '';
+            });
+
+            galleryGrid.appendChild(card);
+
+            // Carrossel automático dentro do card
+            if (album.photos.length > 1) {
+                let coverIndex = 0;
+                setInterval(() => {
+                    coverIndex = (coverIndex + 1) % album.photos.length;
+                    const nextPhoto = album.photos[coverIndex];
+                    img.style.opacity = '0';
+                    setTimeout(() => {
+                        img.src = nextPhoto.photo_url;
+                        img.alt = album.title ? `Álbum ${album.title}` : 'Foto de casamento';
+                        img.style.opacity = '1';
+                    }, 200);
+                }, 4000);
+            }
+        });
     } catch (error) {
         console.error('Erro ao carregar galeria do Supabase:', error);
         if (galleryError) {
@@ -416,3 +469,109 @@ async function loadGalleryFromSupabase() {
 
 // Carregar galeria dinâmica ao iniciar
 loadGalleryFromSupabase().catch(console.error);
+
+// =========================
+// Supabase - Depoimentos
+// =========================
+
+function formatTestimonialDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
+async function loadTestimonialsFromSupabase() {
+    if (!supabaseClient || !testimonialsGrid) return;
+
+    try {
+        if (testimonialsLoader) testimonialsLoader.style.display = 'flex';
+        if (testimonialsError) testimonialsError.textContent = '';
+        if (testimonialsEmpty) testimonialsEmpty.hidden = true;
+        testimonialsGrid.innerHTML = '';
+
+        const { data: testimonials, error } = await supabaseClient
+            .from('testimonials')
+            .select('*')
+            .order('wedding_date', { ascending: false })
+            .limit(9);
+
+        if (error) throw error;
+
+        if (!testimonials || testimonials.length === 0) {
+            if (testimonialsEmpty) testimonialsEmpty.hidden = false;
+            return;
+        }
+
+        testimonials.forEach(testimonial => {
+            const card = document.createElement('article');
+            card.className = 'testimonial-card';
+
+            const quote = document.createElement('div');
+            quote.className = 'testimonial-quote-mark';
+            quote.textContent = '“';
+
+            const contentWrapper = document.createElement('div');
+            contentWrapper.className = 'testimonial-content';
+
+            const text = document.createElement('p');
+            text.className = 'testimonial-text';
+            text.textContent = testimonial.content;
+
+            contentWrapper.appendChild(text);
+
+            const footer = document.createElement('div');
+            footer.className = 'testimonial-footer';
+
+            if (testimonial.couple_photo_url) {
+                const avatar = document.createElement('div');
+                avatar.className = 'testimonial-avatar';
+                const img = document.createElement('img');
+                img.src = testimonial.couple_photo_url;
+                img.alt = testimonial.couple_names || 'Noivos';
+                img.loading = 'lazy';
+                avatar.appendChild(img);
+                footer.appendChild(avatar);
+            }
+
+            const meta = document.createElement('div');
+            meta.className = 'testimonial-meta';
+
+            const names = document.createElement('p');
+            names.className = 'testimonial-names';
+            names.textContent = testimonial.couple_names || 'Casal';
+
+            meta.appendChild(names);
+
+            const formattedDate = formatTestimonialDate(testimonial.wedding_date);
+            if (formattedDate) {
+                const date = document.createElement('p');
+                date.className = 'testimonial-date';
+                date.textContent = formattedDate;
+                meta.appendChild(date);
+            }
+
+            footer.appendChild(meta);
+
+            card.appendChild(quote);
+            card.appendChild(contentWrapper);
+            card.appendChild(footer);
+
+            testimonialsGrid.appendChild(card);
+        });
+    } catch (error) {
+        console.error('Erro ao carregar depoimentos do Supabase:', error);
+        if (testimonialsError) {
+            testimonialsError.textContent = 'Não foi possível carregar os depoimentos.';
+        }
+    } finally {
+        if (testimonialsLoader) testimonialsLoader.style.display = 'none';
+    }
+}
+
+loadTestimonialsFromSupabase().catch(console.error);
+

@@ -441,43 +441,63 @@ body {
     margin-top: 4rem;
 }
 
-.masonry-item {
+/* Card de álbum na galeria */
+.album-card {
     position: relative;
     overflow: hidden;
-    border-radius: 8px;
-    aspect-ratio: 3/4;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #101010, #181818);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    min-height: 320px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.7);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.masonry-item img {
+.album-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--gold);
+    box-shadow: 0 26px 70px rgba(212, 175, 55, 0.25);
+}
+
+.album-carousel {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3/4;
+    overflow: hidden;
+}
+
+.album-carousel img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: var(--transition);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    image-rendering: -webkit-optimize-contrast;
+    shape-rendering: auto;
 }
 
-.masonry-item:hover img {
-    transform: scale(1.1);
+.album-card:hover .album-carousel img {
+    transform: scale(1.03);
 }
 
-.masonry-item::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        to bottom,
-        transparent,
-        rgba(0, 0, 0, 0.5)
-    );
-    opacity: 0;
-    transition: var(--transition);
+.album-info {
+    padding: 1rem 1.2rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
 }
 
-.masonry-item:hover::after {
-    opacity: 1;
+.album-title {
+    font-size: 1.05rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.album-date {
+    font-size: 0.9rem;
+    color: var(--text-gray-light);
 }
 
 /* Loader Galeria */
@@ -734,6 +754,12 @@ body {
     border-radius: 12px;
 }
 
+.admin-textarea {
+    border-radius: 16px;
+    min-height: 120px;
+    resize: vertical;
+}
+
 .admin-button {
     align-self: flex-start;
     padding: 0.9rem 2.5rem;
@@ -790,6 +816,118 @@ body {
     color: var(--text-gray);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     background-color: #050505;
+}
+
+/* Depoimentos Section */
+.testimonials {
+    padding: 100px 0;
+    background: linear-gradient(135deg, #050505, #111111);
+}
+
+.testimonials-grid {
+    margin-top: 4rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.testimonial-card {
+    position: relative;
+    padding: 2rem 2.2rem 2rem;
+    border-radius: 18px;
+    background: radial-gradient(circle at top left, rgba(212, 175, 55, 0.15), transparent),
+                radial-gradient(circle at bottom right, rgba(212, 175, 55, 0.08), transparent),
+                linear-gradient(145deg, #111111, #181818);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.testimonial-quote-mark {
+    position: absolute;
+    top: 12px;
+    left: 20px;
+    font-size: 4rem;
+    line-height: 1;
+    color: rgba(212, 175, 55, 0.2);
+    pointer-events: none;
+}
+
+.testimonial-content {
+    position: relative;
+    margin-top: 1rem;
+}
+
+.testimonial-text {
+    font-size: 0.98rem;
+    line-height: 1.9;
+    color: var(--text-gray);
+}
+
+.testimonial-footer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.testimonial-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--gold);
+    flex-shrink: 0;
+}
+
+.testimonial-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    image-rendering: -webkit-optimize-contrast;
+    shape-rendering: auto;
+}
+
+.testimonial-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.testimonial-names {
+    font-size: 1.05rem;
+    font-family: "Playfair Display", "Segoe Script", "Brush Script MT", cursive;
+    letter-spacing: 1px;
+}
+
+.testimonial-date {
+    font-size: 0.85rem;
+    color: var(--text-gray-light);
+}
+
+.testimonials-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+    color: var(--text-gray);
+    gap: 1rem;
+}
+
+.testimonials-error {
+    color: #ff6b6b;
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+}
+
+.testimonials-empty {
+    text-align: center;
+    margin-top: 2rem;
+    color: var(--text-gray);
+    font-size: 0.95rem;
 }
 
 /* Footer */

@@ -53,6 +53,13 @@
                                 <label for="albumDate">Data do casamento</label>
                                 <input type="date" id="albumDate" class="admin-input" required>
                             </div>
+                            <div class="admin-field">
+                                <label for="albumCoverFile">Capa do álbum (opcional)</label>
+                                <input type="file" id="albumCoverFile" class="admin-input" accept="image/*">
+                                <p class="admin-helper-text">
+                                    A imagem será otimizada para no máximo 800px de largura com qualidade 0.8 para uso como capa.
+                                </p>
+                            </div>
                             <button type="submit" class="admin-button">Criar álbum</button>
                             <p id="createAlbumMessage" class="admin-success-message"></p>
                             <p id="createAlbumError" class="admin-error-message"></p>
@@ -84,6 +91,38 @@
                             <p id="uploadPhotosError" class="admin-error-message"></p>
                         </form>
                     </div>
+
+                    <!-- Depoimentos -->
+                    <div class="admin-block">
+                        <h2 class="admin-block-title">Adicionar Depoimento</h2>
+                        <p class="admin-helper-text">Cadastre o depoimento dos noivos com uma foto em miniatura.</p>
+
+                        <form id="testimonialForm" class="admin-form">
+                            <div class="admin-field">
+                                <label for="testimonialCoupleNames">Nomes dos noivos</label>
+                                <input type="text" id="testimonialCoupleNames" class="admin-input" placeholder="Ex: Ana & João" required>
+                            </div>
+                            <div class="admin-field">
+                                <label for="testimonialContent">Depoimento</label>
+                                <textarea id="testimonialContent" class="admin-input admin-textarea" rows="4" placeholder="Escreva aqui o depoimento dos noivos" required></textarea>
+                            </div>
+                            <div class="admin-field">
+                                <label for="testimonialWeddingDate">Data do casamento (opcional)</label>
+                                <input type="date" id="testimonialWeddingDate" class="admin-input">
+                            </div>
+                            <div class="admin-field">
+                                <label for="testimonialPhoto">Foto dos noivos (mini thumb)</label>
+                                <input type="file" id="testimonialPhoto" class="admin-input" accept="image/*">
+                            </div>
+                            <button type="submit" class="admin-button">Salvar depoimento</button>
+                            <div class="admin-progress" id="testimonialProgress" hidden>
+                                <div class="admin-loader-spinner"></div>
+                                <p class="admin-helper-text" id="testimonialStatus">Salvando depoimento...</p>
+                            </div>
+                            <p id="testimonialMessage" class="admin-success-message"></p>
+                            <p id="testimonialError" class="admin-error-message"></p>
+                        </form>
+                    </div>
                 </div>
             </section>
         </main>
@@ -95,6 +134,8 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <!-- Compressão de imagens no browser -->
+    <script src="https://unpkg.com/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <script src="admin.js"></script>
 </body>
 </html>

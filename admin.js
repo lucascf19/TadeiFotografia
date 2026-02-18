@@ -32,12 +32,41 @@ const uploadProgress = document.getElementById('uploadProgress');
 const uploadStatus = document.getElementById('uploadStatus');
 const uploadPhotosMessage = document.getElementById('uploadPhotosMessage');
 const uploadPhotosError = document.getElementById('uploadPhotosError');
+const albumCoverFileInput = document.getElementById('albumCoverFile');
+
+// Depoimentos
+const testimonialForm = document.getElementById('testimonialForm');
+const testimonialCoupleNamesInput = document.getElementById('testimonialCoupleNames');
+const testimonialContentInput = document.getElementById('testimonialContent');
+const testimonialWeddingDateInput = document.getElementById('testimonialWeddingDate');
+const testimonialPhotoInput = document.getElementById('testimonialPhoto');
+const testimonialProgress = document.getElementById('testimonialProgress');
+const testimonialStatus = document.getElementById('testimonialStatus');
+const testimonialMessage = document.getElementById('testimonialMessage');
+const testimonialError = document.getElementById('testimonialError');
 
 // Utilitário simples
 function formatDateToISO(dateStr) {
     // Garante formato YYYY-MM-DD
     if (!dateStr) return null;
     return dateStr;
+}
+
+// Compressão de imagem no cliente
+async function compressImageIfPossible(file, maxWidthOrHeight, quality = 0.8) {
+    if (!file || !window.imageCompression) return file;
+
+    try {
+        const options = {
+            maxWidthOrHeight,
+            initialQuality: quality,
+            useWebWorker: true,
+        };
+        return await window.imageCompression(file, options);
+    } catch (error) {
+        console.error('Erro ao comprimir imagem no cliente, usando arquivo original.', error);
+        return file;
+    }
 }
 
 function setAdminState(isLoggedIn) {
@@ -110,6 +139,7 @@ if (createAlbumForm && supabaseClient) {
 
         const title = albumTitleInput.value.trim();
         const date = formatDateToISO(albumDateInput.value);
+        const coverFile = albumCoverFileInput?.files?.[0] || null;
 
         if (!title || !date) {
             createAlbumError.textContent = 'Preencha título e data do álbum.';
@@ -117,28 +147,58 @@ if (createAlbumForm && supabaseClient) {
         }
 
         try {
-            const { data, error } = await supabaseClient
+            // Primeiro cria o álbum sem capa
+            const { data: albumData, error: albumError } = await supabaseClient
                 .from('albums')
                 .insert([{ title, date }])
                 .select()
                 .single();
 
-            if (error) {
-                console.error(error);
+            if (albumError) {
+                console.error(albumError);
                 createAlbumError.textContent = 'Erro ao criar álbum.';
                 return;
+            }
+
+            // Se o usuário enviou uma capa, comprime e sobe como imagem otimizada
+            if (coverFile && albumData?.id) {
+                const compressedCover = await compressImageIfPossible(coverFile, 800, 0.8);
+                const ext = compressedCover.name?.split('.').pop() || coverFile.name.split('.').pop();
+                const safeName = title.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+                const fileName = `cover-${albumData.id}-${safeName}.${ext}`;
+                const filePath = `album_covers/${albumData.id}/${fileName}`;
+
+                const { data: uploadData, error: uploadError } = await supabaseClient
+                    .storage
+                    .from('photos')
+                    .upload(filePath, compressedCover);
+
+                if (uploadError) {
+                    console.error(uploadError);
+                } else {
+                    const { data: publicData } = supabaseClient
+                        .storage
+                        .from('photos')
+                        .getPublicUrl(uploadData.path);
+
+                    await supabaseClient
+                        .from('albums')
+                        .update({ cover_url: publicData.publicUrl })
+                        .eq('id', albumData.id);
+                }
             }
 
             createAlbumMessage.textContent = 'Álbum criado com sucesso!';
             albumTitleInput.value = '';
             albumDateInput.value = '';
+            if (albumCoverFileInput) albumCoverFileInput.value = '';
 
             // Atualiza select de álbuns
             await loadAlbumsIntoSelect();
 
             // Seleciona automaticamente o novo álbum no select
-            if (data?.id) {
-                albumSelect.value = String(data.id);
+            if (albumData?.id) {
+                albumSelect.value = String(albumData.id);
             }
         } catch (err) {
             console.error(err);
@@ -207,7 +267,10 @@ if (uploadPhotosForm && supabaseClient) {
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                const fileExt = file.name.split('.').pop();
+                // Compressão para a galeria: máx. 1600px largura, qualidade 0.8
+                const compressedFile = await compressImageIfPossible(file, 1600, 0.8);
+
+                const fileExt = compressedFile.name?.split('.').pop() || file.name.split('.').pop();
                 const fileName = `${Date.now()}-${i}.${fileExt}`;
                 const filePath = `${albumId}/${fileName}`;
 
@@ -215,7 +278,7 @@ if (uploadPhotosForm && supabaseClient) {
                 const { data: uploadData, error: uploadError } = await supabaseClient
                     .storage
                     .from('photos')
-                    .upload(filePath, file);
+                    .upload(filePath, compressedFile);
 
                 if (uploadError) {
                     console.error(uploadError);
@@ -267,6 +330,91 @@ if (uploadPhotosForm && supabaseClient) {
             uploadPhotosError.textContent = err.message || 'Erro inesperado ao enviar fotos.';
         } finally {
             uploadProgress.hidden = true;
+        }
+    });
+}
+
+// Depoimentos
+if (testimonialForm && supabaseClient) {
+    testimonialForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        testimonialMessage.textContent = '';
+        testimonialError.textContent = '';
+
+        const coupleNames = testimonialCoupleNamesInput.value.trim();
+        const content = testimonialContentInput.value.trim();
+        const weddingDate = formatDateToISO(testimonialWeddingDateInput.value);
+        const photoFile = testimonialPhotoInput.files?.[0] || null;
+
+        if (!coupleNames || !content) {
+            testimonialError.textContent = 'Preencha os nomes dos noivos e o texto do depoimento.';
+            return;
+        }
+
+        testimonialProgress.hidden = false;
+        testimonialStatus.textContent = 'Salvando depoimento...';
+
+        try {
+            let couplePhotoUrl = null;
+
+            if (photoFile) {
+                // Thumb dos noivos: limitar para 800px de largura (mais que suficiente)
+                const compressedThumb = await compressImageIfPossible(photoFile, 800, 0.8);
+
+                const ext = compressedThumb.name?.split('.').pop() || photoFile.name.split('.').pop();
+                const safeName = coupleNames.replace(/[^a-z0-9]+/gi, '-').toLowerCase();
+                const fileName = `${Date.now()}-${safeName}.${ext}`;
+                const filePath = `testimonials/${fileName}`;
+
+                const { data: uploadData, error: uploadError } = await supabaseClient
+                    .storage
+                    .from('photos')
+                    .upload(filePath, compressedThumb);
+
+                if (uploadError) {
+                    console.error(uploadError);
+                    throw new Error('Erro ao enviar a foto dos noivos.');
+                }
+
+                const { data: publicData } = supabaseClient
+                    .storage
+                    .from('photos')
+                    .getPublicUrl(uploadData.path);
+
+                couplePhotoUrl = publicData.publicUrl;
+            }
+
+            const payload = {
+                couple_names: coupleNames,
+                content,
+                couple_photo_url: couplePhotoUrl,
+            };
+
+            if (weddingDate) {
+                payload.wedding_date = weddingDate;
+            }
+
+            const { error } = await supabaseClient
+                .from('testimonials')
+                .insert([payload]);
+
+            if (error) {
+                console.error(error);
+                throw new Error('Erro ao salvar o depoimento no banco de dados.');
+            }
+
+            testimonialMessage.textContent = 'Depoimento salvo com sucesso!';
+            testimonialCoupleNamesInput.value = '';
+            testimonialContentInput.value = '';
+            testimonialWeddingDateInput.value = '';
+            if (testimonialPhotoInput.value) {
+                testimonialPhotoInput.value = '';
+            }
+        } catch (err) {
+            console.error(err);
+            testimonialError.textContent = err.message || 'Erro inesperado ao salvar o depoimento.';
+        } finally {
+            testimonialProgress.hidden = true;
         }
     });
 }
