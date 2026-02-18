@@ -904,12 +904,21 @@ body {
 
 .testimonial-quote-mark {
     position: absolute;
-    top: 12px;
-    left: 20px;
     font-size: 4rem;
     line-height: 1;
     color: rgba(212, 175, 55, 0.2);
     pointer-events: none;
+}
+
+.testimonial-quote-open {
+    top: 12px;
+    left: 20px;
+}
+
+.testimonial-quote-close {
+    top: 12px;
+    right: 20px;
+   
 }
 
 .testimonial-content {

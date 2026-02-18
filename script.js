@@ -511,9 +511,13 @@ async function loadTestimonialsFromSupabase() {
             const card = document.createElement('article');
             card.className = 'testimonial-card';
 
-            const quote = document.createElement('div');
-            quote.className = 'testimonial-quote-mark';
-            quote.textContent = '“';
+            const quoteOpen = document.createElement('div');
+            quoteOpen.className = 'testimonial-quote-mark testimonial-quote-open';
+            quoteOpen.textContent = '"';
+
+            const quoteClose = document.createElement('div');
+            quoteClose.className = 'testimonial-quote-mark testimonial-quote-close';
+            quoteClose.textContent = '"';
 
             const contentWrapper = document.createElement('div');
             contentWrapper.className = 'testimonial-content';
@@ -557,9 +561,10 @@ async function loadTestimonialsFromSupabase() {
 
             footer.appendChild(meta);
 
-            card.appendChild(quote);
+            card.appendChild(quoteOpen);
             card.appendChild(contentWrapper);
             card.appendChild(footer);
+            card.appendChild(quoteClose);
 
             testimonialsGrid.appendChild(card);
         });

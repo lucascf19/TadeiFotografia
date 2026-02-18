@@ -47,8 +47,14 @@ const testimonialError = document.getElementById('testimonialError');
 const albumsManagerList = document.getElementById('albumsManagerList');
 
 // Garante que os loaders começam ocultos
-if (uploadProgress) uploadProgress.hidden = true;
-if (testimonialProgress) testimonialProgress.hidden = true;
+if (uploadProgress) {
+    uploadProgress.hidden = true;
+    uploadProgress.style.display = 'none';
+}
+if (testimonialProgress) {
+    testimonialProgress.hidden = true;
+    testimonialProgress.style.display = 'none';
+}
 
 // Utilitário simples
 function formatDateToISO(dateStr) {
@@ -80,6 +86,7 @@ function setAdminState(isLoggedIn) {
         adminPanelSection.hidden = false;
         adminLogoutButton.hidden = false;
         loadAlbumsIntoSelect();
+        loadAlbumsManagerList();
     } else {
         adminAuthSection.hidden = false;
         adminPanelSection.hidden = true;
@@ -200,6 +207,7 @@ if (createAlbumForm && supabaseClient) {
 
             // Atualiza select de álbuns
             await loadAlbumsIntoSelect();
+            await loadAlbumsManagerList();
 
             // Seleciona automaticamente o novo álbum no select
             if (albumData?.id) {
@@ -244,6 +252,137 @@ async function loadAlbumsIntoSelect() {
     });
 }
 
+// Gerenciar lista de álbuns (editar/deletar)
+async function loadAlbumsManagerList() {
+    if (!supabaseClient || !albumsManagerList) return;
+
+    albumsManagerList.innerHTML = '<p class="admin-helper-text">Carregando álbuns...</p>';
+
+    const { data: albums, error } = await supabaseClient
+        .from('albums')
+        .select('*')
+        .order('date', { ascending: false });
+
+    if (error) {
+        console.error(error);
+        albumsManagerList.innerHTML = '<p class="admin-error-message">Erro ao carregar álbuns.</p>';
+        return;
+    }
+
+    if (!albums || albums.length === 0) {
+        albumsManagerList.innerHTML = '<p class="admin-helper-text">Nenhum álbum cadastrado.</p>';
+        return;
+    }
+
+    albumsManagerList.innerHTML = '';
+
+    albums.forEach((album) => {
+        const item = document.createElement('div');
+        item.className = 'admin-album-item';
+
+        const main = document.createElement('div');
+        main.className = 'admin-album-main';
+
+        const titleInput = document.createElement('input');
+        titleInput.type = 'text';
+        titleInput.className = 'admin-input';
+        titleInput.value = album.title || '';
+        titleInput.placeholder = 'Título do álbum';
+
+        const dateInput = document.createElement('input');
+        dateInput.type = 'date';
+        dateInput.className = 'admin-input';
+        if (album.date) {
+            const d = new Date(album.date);
+            if (!Number.isNaN(d.getTime())) {
+                dateInput.value = d.toISOString().slice(0, 10);
+            }
+        }
+
+        main.appendChild(titleInput);
+        main.appendChild(dateInput);
+
+        const actions = document.createElement('div');
+        actions.className = 'admin-album-actions';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'admin-button admin-button-secondary';
+        saveBtn.textContent = 'Salvar';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'admin-button admin-button-danger';
+        deleteBtn.textContent = 'Excluir';
+
+        actions.appendChild(saveBtn);
+        actions.appendChild(deleteBtn);
+
+        item.appendChild(main);
+        item.appendChild(actions);
+
+        // Salvar alterações
+        saveBtn.addEventListener('click', async () => {
+            const newTitle = titleInput.value.trim();
+            const newDate = formatDateToISO(dateInput.value);
+
+            if (!newTitle) {
+                alert('Informe um título para o álbum.');
+                return;
+            }
+
+            try {
+                const { error: updateError } = await supabaseClient
+                    .from('albums')
+                    .update({ title: newTitle, date: newDate })
+                    .eq('id', album.id);
+
+                if (updateError) {
+                    console.error(updateError);
+                    alert('Erro ao atualizar o álbum.');
+                    return;
+                }
+
+                alert('Álbum atualizado com sucesso.');
+                await loadAlbumsIntoSelect();
+                await loadAlbumsManagerList();
+            } catch (e) {
+                console.error(e);
+                alert('Erro inesperado ao atualizar o álbum.');
+            }
+        });
+
+        // Excluir álbum
+        deleteBtn.addEventListener('click', async () => {
+            if (!confirm('Tem certeza que deseja excluir este álbum e todas as fotos associadas?')) {
+                return;
+            }
+
+            try {
+                const { error: deleteError } = await supabaseClient
+                    .from('albums')
+                    .delete()
+                    .eq('id', album.id);
+
+                if (deleteError) {
+                    console.error(deleteError);
+                    alert('Erro ao excluir o álbum.');
+                    return;
+                }
+
+                alert('Álbum excluído com sucesso.');
+                await loadAlbumsIntoSelect();
+                await loadAlbumsManagerList();
+            } catch (e) {
+                console.error(e);
+                alert('Erro inesperado ao excluir o álbum.');
+            }
+        });
+
+        albumsManagerList.appendChild(item);
+    });
+}
+
 // Upload de fotos
 if (uploadPhotosForm && supabaseClient) {
     uploadPhotosForm.addEventListener('submit', async (e) => {
@@ -265,6 +404,7 @@ if (uploadPhotosForm && supabaseClient) {
         }
 
         uploadProgress.hidden = false;
+        uploadProgress.style.display = 'flex';
         uploadStatus.textContent = 'Enviando fotos...';
 
         try {
@@ -335,6 +475,7 @@ if (uploadPhotosForm && supabaseClient) {
             uploadPhotosError.textContent = err.message || 'Erro inesperado ao enviar fotos.';
         } finally {
             uploadProgress.hidden = true;
+            uploadProgress.style.display = 'none';
         }
     });
 }
@@ -357,6 +498,7 @@ if (testimonialForm && supabaseClient) {
         }
 
         testimonialProgress.hidden = false;
+        testimonialProgress.style.display = 'flex';
         testimonialStatus.textContent = 'Salvando depoimento...';
 
         try {
@@ -420,6 +562,7 @@ if (testimonialForm && supabaseClient) {
             testimonialError.textContent = err.message || 'Erro inesperado ao salvar o depoimento.';
         } finally {
             testimonialProgress.hidden = true;
+            testimonialProgress.style.display = 'none';
         }
     });
 }
