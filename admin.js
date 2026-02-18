@@ -44,6 +44,11 @@ const testimonialProgress = document.getElementById('testimonialProgress');
 const testimonialStatus = document.getElementById('testimonialStatus');
 const testimonialMessage = document.getElementById('testimonialMessage');
 const testimonialError = document.getElementById('testimonialError');
+const albumsManagerList = document.getElementById('albumsManagerList');
+
+// Garante que os loaders começam ocultos
+if (uploadProgress) uploadProgress.hidden = true;
+if (testimonialProgress) testimonialProgress.hidden = true;
 
 // Utilitário simples
 function formatDateToISO(dateStr) {

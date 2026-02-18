@@ -818,6 +818,63 @@ body {
     background-color: #050505;
 }
 
+.admin-albums-list {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.admin-album-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-album-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.admin-album-main .admin-input {
+    border-radius: 999px;
+}
+
+.admin-album-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.admin-button-secondary {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid rgba(212, 175, 55, 0.7);
+    box-shadow: none;
+}
+
+.admin-button-secondary:hover {
+    background-color: rgba(212, 175, 55, 0.12);
+}
+
+.admin-button-danger {
+    background: linear-gradient(135deg, #b33939, #ff5252);
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(255, 82, 82, 0.4);
+}
+
+.admin-button-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px rgba(255, 82, 82, 0.6);
+}
+
 /* Depoimentos Section */
 .testimonials {
     padding: 100px 0;

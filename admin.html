@@ -68,8 +68,8 @@
 
                     <!-- Upload Fotos -->
                     <div class="admin-block">
-                        <h2 class="admin-block-title">Upload de Fotos</h2>
-                        <p class="admin-helper-text">Selecione o álbum e envie múltiplas fotos para o Storage.</p>
+                        <h2 class="admin-block-title">Upload de Fotos da Galeria</h2>
+                        <p class="admin-helper-text">Selecione o álbum e envie múltiplas fotos para a galeria. As imagens serão otimizadas para até 1600px de largura com qualidade 0.8.</p>
 
                         <form id="uploadPhotosForm" class="admin-form">
                             <div class="admin-field">
@@ -122,6 +122,15 @@
                             <p id="testimonialMessage" class="admin-success-message"></p>
                             <p id="testimonialError" class="admin-error-message"></p>
                         </form>
+                    </div>
+
+                    <!-- Gerenciar Álbuns Existentes -->
+                    <div class="admin-block">
+                        <h2 class="admin-block-title">Gerenciar Álbuns Existentes</h2>
+                        <p class="admin-helper-text">Edite títulos e datas ou exclua álbuns já cadastrados.</p>
+                        <div id="albumsManagerList" class="admin-albums-list">
+                            <!-- Lista de álbuns carregada dinamicamente -->
+                        </div>
                     </div>
                 </div>
             </section>
