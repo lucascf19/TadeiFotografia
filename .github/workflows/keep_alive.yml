@@ -1,0 +1,18 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Roda todos os dias às 00:00 UTC (ajuste se quiser)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Permite que você rode manualmente para testar
+
+jobs:
+  ping_supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Database via Edge Function or REST API
+        run: |
+          curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/albums?select=id&limit=1" \
+          -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
+
